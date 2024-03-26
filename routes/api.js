@@ -157,10 +157,26 @@ router.get('/list_distributor', async (req, res) => {
     console.log(payload);
 
     try {
-        const data = await Distributor.find().sort({createdAt: -1});
+        const data = await Distributor.find().sort({ createdAt: -1 });
         res.json({
             "status": 200,
             "messenger": "Danh sach distributor",
+            "data": data
+        });
+    } catch (error) {
+        console.log(error);
+    }
+})
+
+router.get('/search_distributor', async (req, res) => {
+    try {
+        const key = req.query.key;
+        const data = await Distributor.find({
+            name: { "$regex": key, "$options": "i" }
+        }).sort({ createdAt: -1 });
+        res.json({
+            "status": 200,
+            "messenger": "Danh sach tim kiem distributor",
             "data": data
         });
     } catch (error) {
@@ -207,17 +223,6 @@ router.get('/fruit_by_id/:id', async (req, res) => {
 })
 
 router.get('/list_fruit_in_price', async (req, res) => {
-    const auth = req.headers['authorization'];
-    const token = auth && auth.split(' ')[1];
-    if (token == null) return res.sendStatus(401);
-    let payload;
-    JWT.verify(token, SECRETKEY, (err, _payload) => {
-        if (err instanceof JWT.TokenExpiredError) return res.sendStatus(401);
-        if (err) return res.sendStatus(403);
-        payload = _payload;
-    });
-    console.log(payload);
-
     try {
         const { ps, pe } = req.query;
         const query = { price: { $gte: ps, $lte: pe } };
@@ -236,31 +241,19 @@ router.get('/list_fruit_in_price', async (req, res) => {
     }
 })
 
-router.get('/list_fruit_have_name_a_or_x', async (req, res) => {
-    const auth = req.headers['authorization'];
-    const token = auth && auth.split(' ')[1];
-    if (token == null) return res.sendStatus(401);
-    let payload;
-    JWT.verify(token, SECRETKEY, (err, _payload) => {
-        if (err instanceof JWT.TokenExpiredError) return res.sendStatus(401);
-        if (err) return res.sendStatus(403);
-        payload = _payload;
-    });
-    console.log(payload);
-
+router.put('/update_distributor_by_id/:id', async (req, res) => {
     try {
-        const query = {
-            $or: [
-                { name: { $regex: 'T' } },
-                { name: { $regex: 'X' } }
-            ]
-        };
-        const data = await Fruit.find(query, 'name quantity price id_distributor')
-            .populate(id_distributor);
-        res.json({
+        const { id } = req.params;
+        const data = req.body;
+        const result = await Distributor.findByIdAndUpdate(id, {name: data.name});
+        if (result) res.json({
             "status": 200,
-            "messenger": "Danh sach fruit",
-            "data": data
+            "messenger": "Da cap nhat distributor",
+            "data": result
+        }); else res.json({
+            "status": 400,
+            "messenger": "Cap nhat distributor that bai",
+            "data": []
         });
     } catch (error) {
         console.log(error);
@@ -297,22 +290,40 @@ router.put('/update_fruit_by_id/:id', async (req, res) => {
     }
 })
 
+router.delete('/delete_distributor_by_id/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const result = Distributor.findByIdAndDelete(id);
+        if (result) res.json({
+            "status": 200,
+            "messenger": "Da xoa distributor",
+            "data": result
+        }); else res.json({
+            "status": 400,
+            "messenger": "Xoa distributor that bai",
+            "data": []
+        });
+    } catch (error) {
+        console.log(error);
+    }
+})
+
 router.delete('/delete_fruit_by_id/:id', async (req, res) => {
     try {
         const { id } = req.params;
         const result = Fruit.findByIdAndDelete(id);
+        if (result) res.json({
+            "status": 200,
+            "messenger": "Da xoa fruit",
+            "data": result
+        }); else res.json({
+            "status": 400,
+            "messenger": "Xoa fruit that bai",
+            "data": []
+        });
     } catch (error) {
         console.log(error);
     }
-    if (result) res.json({
-        "status": 200,
-        "messenger": "Da xoa fruit",
-        "data": result
-    }); else res.json({
-        "status": 400,
-        "messenger": "Xoa fruit that bai",
-        "data": []
-    });
 })
 
 module.exports = router
