@@ -125,15 +125,15 @@ router.post('/login', async (req, res) => {
         const { username, password } = req.body;
         const user = await User.findOne({ username, password });
         if (user) {
-            const token = JWT.sign({id: user._id},SECRETKEY,{expiresIn: '1h'});
-            const refreshToken = JWT.sign({id: user._id},SECRETKEY,{expiresIn: '1d'})
-            res.json({ 
-                "status" : 200, 
-                "messenger" : "Dang nhap thanh cong", 
-                "data" : user, 
-                "token" : token, 
-                "refreshToken" : refreshToken 
-            }) 
+            const token = JWT.sign({ id: user._id }, SECRETKEY, { expiresIn: '1h' });
+            const refreshToken = JWT.sign({ id: user._id }, SECRETKEY, { expiresIn: '1d' })
+            res.json({
+                "status": 200,
+                "messenger": "Dang nhap thanh cong",
+                "data": user,
+                "token": token,
+                "refreshToken": refreshToken
+            })
         } else res.json({
             "status": 400,
             "messenger": "Dang nhap that bai",
@@ -145,6 +145,16 @@ router.post('/login', async (req, res) => {
 })
 
 router.get('/list_fruit', async (req, res) => {
+    const auth = req.headers['authorization'];
+    const token = auth && auth.split(' ')[1];
+    if (token == null) return res.sendStatus(401);
+    let payload;
+    JWT.verify(token, SECRETKEY, (err, _payload) => {
+        if (err instanceof JWT.TokenExpiredError) return res.sendStatus(401);
+        if (err) return res.sendStatus(403);
+        payload = _payload;
+    });
+    console.log(payload);
     try {
         const data = await Fruit.find().populate('id_distributor');
         res.json({
@@ -158,6 +168,16 @@ router.get('/list_fruit', async (req, res) => {
 })
 
 router.get('/fruit_by_id/:id', async (req, res) => {
+    const auth = req.headers['authorization'];
+    const token = auth && auth.split(' ')[1];
+    if(token == null) return res.sendStatus(401);
+    let payload;
+    JWT.verify(token, SECRETKEY, (err, _payload) => {
+        if(err instanceof JWT.TokenExpiredError) return res.sendStatus(401);
+        if(err) return res.sendStatus(403);
+        payload = _payload;
+    });
+    console.log(payload);
     try {
         const { id } = req.params;
         const data = await Fruit.findById(id).populate('id_distributor');
@@ -172,6 +192,16 @@ router.get('/fruit_by_id/:id', async (req, res) => {
 })
 
 router.get('/list_fruit_in_price', async (req, res) => {
+    const auth = req.headers['authorization'];
+    const token = auth && auth.split(' ')[1];
+    if(token == null) return res.sendStatus(401);
+    let payload;
+    JWT.verify(token, SECRETKEY, (err, _payload) => {
+        if(err instanceof JWT.TokenExpiredError) return res.sendStatus(401);
+        if(err) return res.sendStatus(403);
+        payload = _payload;
+    });
+    console.log(payload);
     try {
         const { ps, pe } = req.query;
         const query = { price: { $gte: ps, $lte: pe } };
@@ -191,6 +221,16 @@ router.get('/list_fruit_in_price', async (req, res) => {
 })
 
 router.get('/list_fruit_have_name_a_or_x', async (req, res) => {
+    const auth = req.headers['authorization'];
+    const token = auth && auth.split(' ')[1];
+    if(token == null) return res.sendStatus(401);
+    let payload;
+    JWT.verify(token, SECRETKEY, (err, _payload) => {
+        if(err instanceof JWT.TokenExpiredError) return res.sendStatus(401);
+        if(err) return res.sendStatus(403);
+        payload = _payload;
+    });
+    console.log(payload);
     try {
         const query = {
             $or: [
