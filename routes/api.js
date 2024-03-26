@@ -5,6 +5,8 @@ const Distributor = require('../models/distributors')
 const Fruit = require('../models/fruits')
 const User = require('../models/users')
 
+const image = require('../config/common/image')
+
 router.post('/add_distributor', async (req, res) => {
     try {
         const data = req.body;
@@ -33,6 +35,35 @@ router.post('/add_fruit', async (req, res) => {
             price: data.price,
             status: data.status,
             image: data.image,
+            description: data.description,
+            id_distributor: data.id_distributor
+        });
+        const result = await anew.save();
+        if (result) res.json({
+            "status": 200,
+            "messenger": "Da them fruit",
+            "data": result
+        }); else res.json({
+            "status": 400,
+            "messenger": "Them fruit that bai",
+            "data": []
+        });
+    } catch (error) {
+        console.log(error);
+    }
+})
+
+router.post('/add_fruit_with_image', image.array('image', 5), async (req, res) => {
+    try {
+        const data = req.body;
+        const {files} = req;
+        const urlsImage = files.map((file) => `${req.protocol}://${req.get("host")}/images/${file.filename}`);
+        const anew = new Fruit({
+            name: data.name,
+            quantity: data.quantity,
+            price: data.price,
+            status: data.status,
+            image: urlsImage,
             description: data.description,
             id_distributor: data.id_distributor
         });
@@ -133,7 +164,6 @@ router.put('/update_fruit_by_id/:id', async (req, res) => {
             update.id_distributor = data.id_distributor ?? update.id_distributor;
             result = await update.save();
         }
-        
         if (result) res.json({
             "status": 200,
             "messenger": "Da cap nhat fruit",
@@ -146,6 +176,24 @@ router.put('/update_fruit_by_id/:id', async (req, res) => {
     } catch (error) {
         console.log(error);
     }
+})
+
+router.delete('/delete_fruit_by_id/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const result = Fruit.findByIdAndDelete(id);
+    } catch (error) {
+        console.log(error);
+    }
+    if (result) res.json({
+        "status": 200,
+        "messenger": "Da xoa fruit",
+        "data": result
+    }); else res.json({
+        "status": 400,
+        "messenger": "Xoa fruit that bai",
+        "data": []
+    });
 })
 
 module.exports = router
