@@ -1,11 +1,14 @@
 var express = require('express')
+const JWT = require('jsonwebtoken')
 var router = express.Router()
+const SECRETKEY = "MATKHAUBIMATSIEUCAPVUTRU"
 
 const Distributor = require('../models/distributors')
 const Fruit = require('../models/fruits')
 const User = require('../models/users')
 
 const image = require('../config/common/image')
+const Transporter = require('../config/common/mail')
 
 router.post('/add_distributor', async (req, res) => {
     try {
@@ -56,7 +59,7 @@ router.post('/add_fruit', async (req, res) => {
 router.post('/add_fruit_with_image', image.array('image', 5), async (req, res) => {
     try {
         const data = req.body;
-        const {files} = req;
+        const { files } = req;
         const urlsImage = files.map((file) => `${req.protocol}://${req.get("host")}/images/${file.filename}`);
         const anew = new Fruit({
             name: data.name,
@@ -75,6 +78,65 @@ router.post('/add_fruit_with_image', image.array('image', 5), async (req, res) =
         }); else res.json({
             "status": 400,
             "messenger": "Them fruit that bai",
+            "data": []
+        });
+    } catch (error) {
+        console.log(error);
+    }
+})
+
+router.post('/register', image.single('avatar'), async (req, res) => {
+    try {
+        const data = req.body;
+        const { files } = req;
+        const anew = new User({
+            username: data.username,
+            password: data.password,
+            email: data.email,
+            name: data.name,
+            avatar: `${req.protocol}://${req.get("host")}/images/${file.filename}`
+        })
+        const result = await anew.save();
+        if (result) {
+            const options = {
+                from: "huynkph38086@fpt.edu.vn",
+                to: result.email,
+                subject: "Đăng ký thành công",
+                text: "Cảm ơn bạn đã đăng ký"
+            };
+            await Transporter.sendMail(options);
+            res.json({
+                "status": 200,
+                "messenger": "Dang ky thanh cong",
+                "data": result
+            });
+        } else res.json({
+            "status": 400,
+            "messenger": "Dang ky that bai",
+            "data": []
+        });
+    } catch (error) {
+        console.log(error);
+    }
+})
+
+router.post('/login', async (req, res) => {
+    try {
+        const { username, password } = req.body;
+        const user = await User.findOne({ username, password });
+        if (user) {
+            const token = JWT.sign({id: user._id},SECRETKEY,{expiresIn: '1h'});
+            const refreshToken = JWT.sign({id: user._id},SECRETKEY,{expiresIn: '1d'})
+            res.json({ 
+                "status" : 200, 
+                "messenger" : "Dang nhap thanh cong", 
+                "data" : user, 
+                "token" : token, 
+                "refreshToken" : refreshToken 
+            }) 
+        } else res.json({
+            "status": 400,
+            "messenger": "Dang nhap that bai",
             "data": []
         });
     } catch (error) {

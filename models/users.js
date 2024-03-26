@@ -10,4 +10,4 @@ const user = new scheme({
     avaiable: { type: Boolean, default: false }
 }, { timestamps: true })
 
-module.exports = mongoose.model('user', user);
+module.exports = mongoose.model('user', user)
