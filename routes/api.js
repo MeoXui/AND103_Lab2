@@ -185,11 +185,11 @@ router.get('/fruit_by_id/:id', async (req, res) => {
 router.get('/list_fruit_in_price', async (req, res) => {
     const auth = req.headers['authorization'];
     const token = auth && auth.split(' ')[1];
-    if(token == null) return res.sendStatus(401);
+    if (token == null) return res.sendStatus(401);
     let payload;
     JWT.verify(token, SECRETKEY, (err, _payload) => {
-        if(err instanceof JWT.TokenExpiredError) return res.sendStatus(401);
-        if(err) return res.sendStatus(403);
+        if (err instanceof JWT.TokenExpiredError) return res.sendStatus(401);
+        if (err) return res.sendStatus(403);
         payload = _payload;
     });
     console.log(payload);
@@ -215,11 +215,11 @@ router.get('/list_fruit_in_price', async (req, res) => {
 router.get('/list_fruit_have_name_a_or_x', async (req, res) => {
     const auth = req.headers['authorization'];
     const token = auth && auth.split(' ')[1];
-    if(token == null) return res.sendStatus(401);
+    if (token == null) return res.sendStatus(401);
     let payload;
     JWT.verify(token, SECRETKEY, (err, _payload) => {
-        if(err instanceof JWT.TokenExpiredError) return res.sendStatus(401);
-        if(err) return res.sendStatus(403);
+        if (err instanceof JWT.TokenExpiredError) return res.sendStatus(401);
+        if (err) return res.sendStatus(403);
         payload = _payload;
     });
     console.log(payload);
